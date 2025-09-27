@@ -1,0 +1,80 @@
+<!-- form.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Vehicle Form</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin:0; padding:20px;
+    background: linear-gradient(120deg, #89f7fe, #66a6ff);
+  }
+  form {
+    background:#fff; padding:20px; border-radius:12px;
+    max-width:600px; margin:auto; box-shadow:0 6px 12px rgba(0,0,0,0.15);
+  }
+  h1 {text-align:center; color:#333;}
+  input, select {
+    width:100%; padding:10px; margin:8px 0;
+    border:1px solid #ccc; border-radius:6px;
+  }
+  button {
+    width:100%; padding:12px; background:#007bff;
+    color:#fff; font-size:16px; border:none; border-radius:6px; cursor:pointer;
+    transition:0.3s;
+  }
+  button:hover {background:#0056b3;}
+</style>
+</head>
+<body>
+<h1>🚘 Vehicle Registration Form</h1>
+<form id="vehicleForm">
+  <input type="text" placeholder="Name" required id="name">
+  <input type="text" placeholder="Address" required id="address">
+  <input type="number" placeholder="Age" required id="age">
+  <input type="text" placeholder="Contact No" required id="contact">
+  <input type="text" placeholder="Aadhaar" required id="aadhaar">
+  <select id="vehicleType">
+    <option>Bajaj CNG</option><option>TVS CNS</option>
+    <option>Bajaj Diesel</option><option>TVS Diesel</option>
+    <option>EV</option><option>Electrical</option>
+  </select>
+  <input type="text" placeholder="Vehicle No" required id="vehicleNo">
+  <select id="vehicleModel">
+    <option>2020</option><option>2021</option><option>2022</option>
+    <option>2023</option><option>2024</option><option>2025</option>
+  </select>
+  <button type="submit">Submit</button>
+</form>
+<script>
+let params = new URLSearchParams(window.location.search);
+let token = params.get('token');
+let todayKey = new Date().toISOString().split('T')[0];
+
+if(token!==btoa(todayKey)){
+  document.body.innerHTML = '<h2 style="text-align:center;color:red;">❌ Link expired or invalid!</h2>';
+}
+
+document.getElementById('vehicleForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  let record = {
+    name:document.getElementById('name').value,
+    address:document.getElementById('address').value,
+    age:document.getElementById('age').value,
+    contact:document.getElementById('contact').value,
+    aadhaar:document.getElementById('aadhaar').value,
+    vehicleType:document.getElementById('vehicleType').value,
+    vehicleNo:document.getElementById('vehicleNo').value,
+    vehicleModel:document.getElementById('vehicleModel').value
+  };
+  let records = JSON.parse(localStorage.getItem('records')||'[]');
+  records.push(record);
+  localStorage.setItem('records', JSON.stringify(records));
+  alert('✅ Form submitted successfully!');
+  document.getElementById('vehicleForm').reset();
+});
+</script>
+</body>
+</html>

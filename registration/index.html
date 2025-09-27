@@ -1,0 +1,153 @@
+<!-- admin.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin:0; padding:20px;
+    background: linear-gradient(135deg, #0d1b2a, #1b263b, #415a77);
+    color:#fff;
+  }
+  h1 {text-align:center; margin-bottom:20px;}
+  .card {
+    background:#fff; color:#333;
+    padding:20px; border-radius:12px;
+    box-shadow:0 6px 12px rgba(0,0,0,0.2);
+    margin-bottom:20px;
+  }
+  .btn {
+    padding:8px 16px; margin:5px;
+    border:none; cursor:pointer;
+    border-radius:6px; font-weight:600;
+    transition:0.3s;
+  }
+  .btn:hover {opacity:0.85;}
+  .btn-primary {background:#007bff; color:#fff;}
+  .btn-danger {background:#dc3545; color:#fff;}
+  .btn-success {background:#28a745; color:#fff;}
+  .btn-secondary {background:#6c757d; color:#fff;}
+  input[type=text] {padding:8px; width:60%; margin:5px 0; border-radius:6px; border:1px solid #ccc;}
+  table {width:100%; border-collapse:collapse; margin-top:15px;}
+  th, td {padding:10px; border:1px solid #ddd; text-align:left;}
+  th {background:#f1f1f1; color:#333;}
+  tr:nth-child(even){background:#fafafa;}
+</style>
+</head>
+<body>
+<h1>🚖 Admin Dashboard</h1>
+
+<div class="card">
+  <h2>Daily Link Generator</h2>
+  <button class="btn btn-primary" onclick="generateLink()">Generate Daily Link</button>
+  <input type="text" id="generatedLink" readonly>
+  <button class="btn btn-success" onclick="copyLink()">Copy</button>
+</div>
+
+<div class="card">
+  <h2>Customer Records</h2>
+  <input type="text" id="searchBox" placeholder="Search by Name, Aadhaar, Contact" onkeyup="searchTable()">
+  <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+  <table id="recordsTable">
+    <thead>
+      <tr>
+        <th>Name</th><th>Address</th><th>Age</th><th>Contact</th><th>Aadhaar</th>
+        <th>Vehicle Type</th><th>Vehicle No</th><th>Model</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+let records = JSON.parse(localStorage.getItem('records')||'[]');
+let todayKey = new Date().toISOString().split('T')[0];
+
+function generateLink(){
+  let token = btoa(todayKey);
+  let link = window.location.origin + "/form.html?token="+token;
+  document.getElementById('generatedLink').value = link;
+}
+
+function copyLink(){
+  let linkBox = document.getElementById('generatedLink');
+  linkBox.select(); document.execCommand('copy');
+  alert('✅ Link copied!');
+}
+
+function loadTable(){
+  let tbody = document.querySelector('#recordsTable tbody');
+  tbody.innerHTML = '';
+  records.forEach((r,i)=>{
+    let row = `<tr>
+      <td>${r.name}</td><td>${r.address}</td><td>${r.age}</td>
+      <td>${r.contact}</td><td>${r.aadhaar}</td>
+      <td>${r.vehicleType}</td><td>${r.vehicleNo}</td><td>${r.vehicleModel}</td>
+      <td>
+        <button class='btn btn-primary' onclick='editRecord(${i})'>Edit</button>
+        <button class='btn btn-danger' onclick='deleteRecord(${i})'>Delete</button>
+        <button class='btn btn-secondary' onclick='printRecord(${i})'>Print</button>
+        <button class='btn btn-success' onclick='shareRecord(${i})'>Share</button>
+      </td>
+    </tr>`;
+    tbody.innerHTML += row;
+  });
+}
+
+function editRecord(i){
+  let r = records[i];
+  let newName = prompt("Update Name", r.name);
+  if(newName!==null){records[i].name=newName;}
+  localStorage.setItem('records', JSON.stringify(records));
+  loadTable();
+}
+
+function deleteRecord(i){
+  if(confirm("Delete this record?")){
+    records.splice(i,1);
+    localStorage.setItem('records', JSON.stringify(records));
+    loadTable();
+  }
+}
+
+function printRecord(i){
+  let r = records[i];
+  let win = window.open();
+  win.document.write(`<pre>${JSON.stringify(r,null,2)}</pre>`);
+  win.print();
+}
+
+function shareRecord(i){
+  let r = records[i];
+  let text = `Customer: ${r.name}, Contact: ${r.contact}, Vehicle: ${r.vehicleType}`;
+  navigator.clipboard.writeText(text);
+  alert("Record copied to clipboard!");
+}
+
+function searchTable(){
+  let term = document.getElementById('searchBox').value.toLowerCase();
+  let trs = document.querySelectorAll('#recordsTable tbody tr');
+  trs.forEach(tr=>{
+    tr.style.display = tr.innerText.toLowerCase().includes(term)?'':'none';
+  });
+}
+
+function exportCSV(){
+  let csv = "Name,Address,Age,Contact,Aadhaar,VehicleType,VehicleNo,Model\n";
+  records.forEach(r=>{
+    csv += `${r.name},${r.address},${r.age},${r.contact},${r.aadhaar},${r.vehicleType},${r.vehicleNo},${r.vehicleModel}\n`;
+  });
+  let blob = new Blob([csv],{type:'text/csv'});
+  let a = document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='records_'+todayKey+'.csv';
+  a.click();
+}
+
+loadTable();
+</script>
+</body>
+</html>
