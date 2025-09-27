@@ -68,7 +68,7 @@ let todayKey = new Date().toISOString().split('T')[0];
 
 function generateLink(){
   let token = btoa(todayKey);
-  let link = window.location.origin + "/form.html?token="+token;
+  let link = "https://somasekhar420.github.io/vehiclesdata/registration/form.html?token="+token;
   document.getElementById('generatedLink').value = link;
 }
 
@@ -150,4 +150,5 @@ function exportCSV(){
 loadTable();
 </script>
 </body>
+
 </html>
